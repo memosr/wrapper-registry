@@ -12,17 +12,25 @@ import {
   type SupportedChainId,
 } from "../lib/registry";
 import { DecryptBalance } from "./DecryptBalance";
+import { TransferPanel } from "./TransferPanel";
 import { WrapPanel } from "./WrapPanel";
 
 type Props = {
   chainId: SupportedChainId;
 };
 
+type PanelKind = "wrap" | "send";
+
+type ExpandedRow = {
+  key: string;
+  panel: PanelKind;
+};
+
 const SKELETON_ROW_COUNT = 5;
 
 export function RegistryTable({ chainId }: Props) {
   const [showRevoked, setShowRevoked] = useState(true);
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<ExpandedRow | null>(null);
 
   const {
     data: pairs,
@@ -111,21 +119,30 @@ export function RegistryTable({ chainId }: Props) {
               ) : visiblePairs && visiblePairs.length > 0 ? (
                 visiblePairs.map((pair) => {
                   const rowKey = `${chainId}:${pair.tokenAddress}-${pair.confidentialTokenAddress}`;
-                  const isExpanded = expandedKey === rowKey;
+                  const expandedPanel =
+                    expanded?.key === rowKey ? expanded.panel : null;
                   return (
                     <Fragment key={rowKey}>
                       <PairRow
                         pair={pair}
                         chainId={chainId}
-                        isExpanded={isExpanded}
-                        onToggle={() =>
-                          setExpandedKey(isExpanded ? null : rowKey)
+                        expandedPanel={expandedPanel}
+                        onToggle={(panel) =>
+                          setExpanded(
+                            expandedPanel === panel
+                              ? null
+                              : { key: rowKey, panel },
+                          )
                         }
                       />
-                      {isExpanded && (
+                      {expandedPanel && (
                         <tr className="border-b border-zinc-100 last:border-b-0 dark:border-zinc-800/60">
                           <td colSpan={6} className="px-4 pb-4 pt-1">
-                            <WrapPanel pair={pair} chainId={chainId} />
+                            {expandedPanel === "wrap" ? (
+                              <WrapPanel pair={pair} chainId={chainId} />
+                            ) : (
+                              <TransferPanel pair={pair} chainId={chainId} />
+                            )}
                           </td>
                         </tr>
                       )}
@@ -153,13 +170,13 @@ export function RegistryTable({ chainId }: Props) {
 function PairRow({
   pair,
   chainId,
-  isExpanded,
+  expandedPanel,
   onToggle,
 }: {
   pair: RegistryPair;
   chainId: SupportedChainId;
-  isExpanded: boolean;
-  onToggle: () => void;
+  expandedPanel: PanelKind | null;
+  onToggle: (panel: PanelKind) => void;
 }) {
   const { explorerUrl } = REGISTRY_CHAINS[chainId];
   const isTestnet = chainId === sepolia.id;
@@ -212,24 +229,44 @@ function PairRow({
       </td>
       <td className="px-4 py-3">
         {isTestnet ? (
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-expanded={isExpanded}
-            className="whitespace-nowrap rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            {isExpanded ? "Close" : "Wrap / Unwrap"}
-          </button>
-        ) : (
-          <div className="flex flex-col items-start gap-0.5">
+          <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              disabled
-              title="Testnet only"
-              className="cursor-not-allowed whitespace-nowrap rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-400 opacity-60 dark:border-zinc-800 dark:text-zinc-600"
+              onClick={() => onToggle("wrap")}
+              aria-expanded={expandedPanel === "wrap"}
+              className="whitespace-nowrap rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              Wrap / Unwrap
+              {expandedPanel === "wrap" ? "Close" : "Wrap / Unwrap"}
             </button>
+            <button
+              type="button"
+              onClick={() => onToggle("send")}
+              aria-expanded={expandedPanel === "send"}
+              className="whitespace-nowrap rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              {expandedPanel === "send" ? "Close" : "Send"}
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-start gap-0.5">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                disabled
+                title="Testnet only"
+                className="cursor-not-allowed whitespace-nowrap rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-400 opacity-60 dark:border-zinc-800 dark:text-zinc-600"
+              >
+                Wrap / Unwrap
+              </button>
+              <button
+                type="button"
+                disabled
+                title="Testnet only"
+                className="cursor-not-allowed whitespace-nowrap rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-400 opacity-60 dark:border-zinc-800 dark:text-zinc-600"
+              >
+                Send
+              </button>
+            </div>
             <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
               Testnet only
             </span>

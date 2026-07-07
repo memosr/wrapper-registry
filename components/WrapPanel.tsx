@@ -371,7 +371,7 @@ function SubmitArea({
   );
 }
 
-function TxLink({ txHash, explorerUrl }: { txHash: Hex; explorerUrl: string }) {
+export function TxLink({ txHash, explorerUrl }: { txHash: Hex; explorerUrl: string }) {
   return (
     <a
       href={`${explorerUrl}/tx/${txHash}`}
@@ -384,7 +384,7 @@ function TxLink({ txHash, explorerUrl }: { txHash: Hex; explorerUrl: string }) {
   );
 }
 
-function parseAmount(input: string, decimals: number): bigint | undefined {
+export function parseAmount(input: string, decimals: number): bigint | undefined {
   const trimmed = input.trim();
   if (!trimmed) return undefined;
   try {
