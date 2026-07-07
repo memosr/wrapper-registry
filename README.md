@@ -112,7 +112,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. No environment variables are needed; the app uses public RPC endpoints and the public Zama relayer.
+Open http: wrapper-registry-pi.vercel.app/. No environment variables are needed; the app uses public RPC endpoints and the public Zama relayer.
 
 ## Usage
 
