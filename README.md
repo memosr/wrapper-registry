@@ -101,33 +101,6 @@ The `useConfidentialTransfer` hook encrypts the amount on the client side. The t
 | `useUnderlyingAllowance` | Reads the ERC-20 allowance granted to the wrapper, used for approval detection |
 | `useConfidentialTransfer` | Transfers the sender's ERC-7984 balance to another address confidentially |
 
-## Setup
-
-Requirements: Node.js 18 or newer, a browser wallet such as MetaMask, and some Sepolia ETH for gas.
-
-```bash
-git clone <repo-url>
-cd wrapper-registry
-npm install
-npm run dev
-```
-
-Open http: wrapper-registry-pi.vercel.app/. No environment variables are needed; the app uses public RPC endpoints and the public Zama relayer.
-
-## Usage
-
-1. Connect your wallet and make sure it is on Sepolia. The app offers a switch button when it is not.
-2. Mint test tokens from the Testnet Faucet, for example 1000 USDCMock. The faucet only appears on the Sepolia tab.
-3. Expand a pair row and wrap an amount. If an approval is needed, the flow submits the approve transaction first, then the wrap.
-4. Click Enable decryption once per wrapper and sign the EIP-712 permit, then click Decrypt balance to see your confidential balance.
-5. After decrypting the balance, use Send to transfer the balance to another address confidentially.
-6. Switch the panel to unwrap and convert the confidential tokens back to the plain ERC-20.
-
-![Faucet on Sepolia](.screenshots/faucet-sepolia.png)
-
-The faucet is hidden on mainnet:
-
-![Faucet hidden on mainnet](.screenshots/faucet-mainnet-hidden.png)
 
 ## Registry contract addresses
 
