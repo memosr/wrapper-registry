@@ -10,6 +10,7 @@ Built for the Zama Developer Program Season 3 Bounty Track.
 2. Wraps and unwraps any listed pair on Sepolia (mainnet is read-only), with per-transaction status steps and explorer links.
 3. Decrypts your confidential ERC-7984 balance client side using an EIP-712 user-decryption permit. Only your wallet can read your balance.
 4. Provides a Sepolia faucet that mints the official Zama mock underlying tokens (USDCMock, USDTMock, WETHMock, and others) so the wrap flow can be tried without holding any tokens.
+5. Sends ERC-7984 wrapper balance to another address confidentially, keeping the amount and balances encrypted on-chain, using the Zama SDK client-side.
 
 Registry on Sepolia:
 
@@ -49,6 +50,7 @@ components/
   RegistryTable.tsx     Pair table with revoked filter, skeletons, and expandable rows
   WrapPanel.tsx         Wrap and unwrap form with approval detection and tx step list
   DecryptBalance.tsx    Permit grant plus on-demand confidential balance decryption
+  TransferPanel.tsx     Confidential transfer form for sending ERC-7984 tokens
   Faucet.tsx            Mint buttons for the official Sepolia mock underlying tokens
 lib/
   registry.ts           Registry ABI, chain config, slice pagination, metadata multicall
@@ -77,6 +79,12 @@ ERC-7984 balances are stored as ciphertext handles, so a plain `balanceOf` retur
 
 ![Permit required before unwrap](.screenshots/decrypt-unwrap-pre-permit.png)
 
+### Confidential transfer
+
+The `useConfidentialTransfer` hook encrypts the amount on the client side. The transfer requires a decryption permit, reusing the existing permit logic. Confidential transfer is only active on Sepolia.
+
+![Confidential transfer panel](.screenshots/transfer-panel.png)
+
 ### Registry reading
 
 `lib/registry.ts` reads `getTokenConfidentialTokenPairsLength` and then pages through `getTokenConfidentialTokenPairsSlice` in batches of 50, so the app keeps working as the registry grows. Token name, symbol, and decimals for both sides of every pair are fetched in a single viem multicall with `allowFailure: true`, so one broken token contract cannot break the whole table. Results are cached for 60 seconds with TanStack Query.
@@ -91,6 +99,7 @@ ERC-7984 balances are stored as ciphertext handles, so a plain `balanceOf` retur
 | `useHasPermit` | Checks whether a valid permit already exists, used to gate decrypt and unwrap UI |
 | `useConfidentialBalance` | Decrypts the caller's own ERC-7984 balance through the relayer |
 | `useUnderlyingAllowance` | Reads the ERC-20 allowance granted to the wrapper, used for approval detection |
+| `useConfidentialTransfer` | Transfers the sender's ERC-7984 balance to another address confidentially |
 
 ## Setup
 
@@ -111,7 +120,8 @@ Open http://localhost:3000. No environment variables are needed; the app uses pu
 2. Mint test tokens from the Testnet Faucet, for example 1000 USDCMock. The faucet only appears on the Sepolia tab.
 3. Expand a pair row and wrap an amount. If an approval is needed, the flow submits the approve transaction first, then the wrap.
 4. Click Enable decryption once per wrapper and sign the EIP-712 permit, then click Decrypt balance to see your confidential balance.
-5. Switch the panel to unwrap and convert the confidential tokens back to the plain ERC-20.
+5. After decrypting the balance, use Send to transfer the balance to another address confidentially.
+6. Switch the panel to unwrap and convert the confidential tokens back to the plain ERC-20.
 
 ![Faucet on Sepolia](.screenshots/faucet-sepolia.png)
 
